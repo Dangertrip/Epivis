@@ -83,7 +83,8 @@ def echo(text):
 
 def cluster_info(nds=None):
     proc, node_info = {}, []
-    if nds is None: nds = ['selenium']+['selenium%s' % str(ii).zfill(3) for ii in nodeids]
+    if nds is None: nds = ['compute-0-%s' % ii for ii in nodeids]
+    print nds
     for nd in nds:
         cmd = "ssh %s '%s' 2> /dev/null" %(nd,'cat /proc/loadavg /proc/meminfo /proc/cpuinfo')
         proc[nd] = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
@@ -100,7 +101,7 @@ def cluster_info(nds=None):
 def show_cluster_info(): #to stdout
     node_info = cluster_info()
     print 'node\tfree_mem\tidle_cpu/total_cpu'
-    for nd in ['selenium']+['selenium%s' % str(ii).zfill(3) for ii in nodeids]:
+    for nd in ['compute-0-%s' % ii for ii in nodeids]:
         try:
             nd,node_mem,node_ncpu,node_load,idle_cpu = [x for x in node_info if x[0]==nd][0]
             print '%s\t%.1fG\t%.1f/%d' % (nd,node_mem/1048576.0,idle_cpu,node_ncpu)
@@ -117,8 +118,9 @@ nodeids = [0]
 #hosts = os.popen("qhost | grep selenium00 | sort -rnk3 -k5 | grep -v ' -'")  ##dsun: done this because on 20100713 there's restriction of use of node after 20 while only several is on after 9
 #for host in hosts.readlines():
 #    nodeids.append(host[8:11])
-nodeids = ['001','002','','004','005','006','007','008','009','035'] ##dsun: please uncomment the four lines above and comment out this line if nodes on qhost work.
+#nodeids = ['001','002','','004','005','006','007','008','009','035'] ##dsun: please uncomment the four lines above and comment out this line if nodes on qhost work.
 #node 003 is taken out because the speed issue
+nodeids=['0','1','2','3','5']
 ks = {'K': 1, 'M': 1024, 'G': 1048576}
 command = []
 nodeid, ptable, memory, cpu, verbose, wait = -1, 'xd'+os.popen('date --date="$(date)" +%s').readline()[:-1] + 'qst', 1048576 * 3.0, 1.0, False, 0
@@ -153,14 +155,14 @@ if ( len(command) == 0 ) : usage('Missing command.')
 
 #print nodeid
 
-if nodeid == 0: nodes = ['selenium']
+if nodeid == 0: nodes = ['compute-0-']
 elif nodeid > 0:
     nodeid = str(nodeid).zfill(3)
-    if nodeid in nodeids: nodes = ['selenium%s' % nodeid ]
+    if nodeid in nodeids: nodes = ['compute-0-%s' % nodeid ]
     else:
-        echo('invalid node: selenium%s' % nodeid)
+        echo('invalid node: compute-0-%s' % nodeid)
         exit(1)
-else: nodes = ['selenium%s' % id for id in nodeids]
+else: nodes = ['compute-0-%s' % id for id in nodeids]
 
 nodes = ['compute-0-0','compute-0-1','compute-0-2','compute-0-3','compute-0-5']#add by yyin for testing
 
