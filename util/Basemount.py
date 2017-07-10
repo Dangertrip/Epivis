@@ -1,4 +1,6 @@
 import subprocess
+import os
+
 def GetPath():
     out = subprocess.call("basemount",shell=True)
     if not "From:" in out:
@@ -15,7 +17,31 @@ def GetPath():
 def Mount(path):
     out = subprocess.call("basemount "+path,shell=True)
 
-def Unmount(path)
+def Unmount(path):
+    out = subprocess.call("basemount --unmount "+path,shell=True)
 
-if __name__=="__main__"
+def GetProjects(path):
+    if path[-1]!='/':
+        path+='/'
+    projects = os.listdir(path+'Projects/')
+    dic={}
+    for p in projects:
+        dic[p]=GetSamples(path+p)
+    return dic
+#return projects list
+
+def GetSamples(path):
+    path += '/Samples/'
+    samples = os.listdir(path)
+    dic={}
+    for s in samples:
+        files = os.listdir(path+s+'/Files/')
+        dic[s]=files
+    return dic
+
+
+
+
+if __name__=="__main__":
+    print("Test")
 
