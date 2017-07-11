@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import sys, glob, os, time, subprocess, threading, pprint
 import argparse
+from Queue import Queue
 ##xrund -v perl -p -i -n -e 's/\./0/' 'export2/*.txt.bed'         RUNS OK!!!!
 ##xrund -v  cat 'export2/*.txt.bed' '| grep chrM >$(hostname).$$.log.chrM'
 
@@ -55,6 +56,13 @@ def singleton(cls, *args, **kws)
             instances[cls]=cls(*args,**kw)
         return instances[cls]
     return _singleton
+
+@singleton
+class Job_Queue(Queue):
+
+    def __init__(self):
+        Queue.__init__(self,1000)
+
 
 @singleton
 class Resource_Monitor():
