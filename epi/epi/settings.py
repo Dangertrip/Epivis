@@ -20,10 +20,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '(x8@*%j_1mwju7h@8jzeugsljy#h7^(ynh_==6!o)jqtqudx8p'
+SECRET_KEY = 'p-th3@ngwyq2eco^rb9a1bdrt+-%wcn#g86+a+75eadfjf$^+h'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'werkzeug_debugger_runserver',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -47,9 +49,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.sessions.middleware.CsrfViewMiddleware',
-    'django.middleware.cliccking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'epi.urls'
@@ -121,7 +120,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-
-#Change
-SESSION_COOKIE_HTTPONLY = True
-
