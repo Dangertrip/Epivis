@@ -5,48 +5,6 @@ from Queue import Queue
 ##xrund -v perl -p -i -n -e 's/\./0/' 'export2/*.txt.bed'         RUNS OK!!!!
 ##xrund -v  cat 'export2/*.txt.bed' '| grep chrM >$(hostname).$$.log.chrM'
 
-def escape( cmd_list ):
-    escaped_cmd_list = cmd_list
-    for ii in xrange(0,len(escaped_cmd_list)):
-        flag = escaped_cmd_list[ii]
-        escape_position = []
-        for index in xrange(0, len(flag)):
-            if( flag[index] == '\\' or flag[index] == '\'' or flag[index] == '\"' ): ##if it contains \ in the argument ? ## do I need escape other characters??
-                escape_position.append( index )
-
-        if( len(escape_position) >0 ):
-
-            for x in xrange( 0,len(escape_position) ):
-                index = x + escape_position[x]
-                escaped_cmd_list[ii] = escaped_cmd_list[ii][:index] + '\\' + escaped_cmd_list[ii][index:]
-            #escaped_cmd_list[ii] = "'\\'" + escaped_cmd_list[ii] + "\\''"
-    return escaped_cmd_list
-
-class MyThread(threading.Thread):
-
-    def __init__(self, node, cwd, commandline, seed, ptable, external_par):
-        threading.Thread.__init__(self) ## init the thread
-        self.node = node
-        self.cwd = cwd
-        self.cmdline = commandline
-        self.seed = seed
-        self.ptable = ptable
-        self.ep = external_par
-        self.exit_code = None
-
-    def run(self):
-        echo("%s started on node %s for seed %s!" % (self.getName(), self.node, self.seed) )
-        echo("Full commandline is: ssh %s \'cd %s && seed=%s && echo $seed:$(hostname):$$ && echo $seed:$(hostname):$$ >>%s && %s\'" % ( self.node,self.cwd, self.seed, self.ptable, self.cmdline ) )
-        self.exit_code = os.system("ssh %s 'cd %s && ep=%s && seed=%s && echo $seed:$(hostname):$$ && echo $seed:$(hostname):$$ >>%s && %s'" % ( self.node,self.cwd, self.ep, self.seed, self.ptable, self.cmdline ) )
-        echo("%s\tfinished on node\t%s\tfor seed\t%s\twith exit code\t%s!" % (self.getName(), self.node, self.seed, self.exit_code) )
-
-    def get_exit_code(self):
-        return self.exit_code
-
-
-
-def echo(text):
-    if verbose: print >> sys.stderr, '%s' % text
 
 #====================================Resource_Monitor============================================
 def singleton(cls, *args, **kws)
@@ -77,6 +35,8 @@ class Resource_Monitor():
 #    def close(self):
 #        if self.t.is_alive():
 
+    def getuser(self):
+        return self._user_number
 
     def adduser(self):
         self._user_number+=1
