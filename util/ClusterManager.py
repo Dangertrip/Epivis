@@ -7,6 +7,9 @@ from Queue import Queue
 
 
 #====================================Resource_Monitor============================================
+def Single_Job_Process(job,node):
+
+
 def singleton(cls, *args, **kws)
     instances = {}
     def _singleton():
@@ -20,6 +23,45 @@ class Job_Queue(Queue):
 
     def __init__(self):
         Queue.__init__(self,1000)
+        self.t = threading.Thread(self.process())
+        #process the jobs in queue one by one.
+        self.t.start()
+        self.threadpool=[]
+        #store all the threads of processing tasks, when thread.is_alive is False, join the thread.
+        self.close_tag=False
+
+    #For each job in job_queue, we select a best node to run the task.
+    def process(self,rm):
+        while True:
+            if self.empty() and self.close_tag: break #In case of closing operation by user
+            while self.empty():#Make sure that there is at least one job in queue
+                time.sleep(60)#check queue status every 60s
+
+            #Get a usable node and ready to run the job on it.
+            job = self.get()
+            status,node = rm.GetBestNode()
+            while not status:
+                time.sleep(300)
+                status,node = rm.GetBestNode()
+
+            #Get another thread to run the single job
+            j = threading.Thread(Single_Job_Process,job,node)
+            self.threadpool.append(j)
+            del_task=[]
+            for i in range(len(threadpool)):
+                if not self.threadpool[i].is_alive():
+                    self.threadpool[i].join()
+                    del_task.append(i)                   #delete jobs that has been finished
+            for i in range(len(del_task)):                  #Need to add a update job status function
+                del self.threadpool[del_task[i]-i]
+        for tt in self.threadpool:
+            tt.join()
+
+    def close():            #In case of shutting down the system manually
+        self.close_tag = True
+        self.t.join()
+
+
 
 
 @singleton
@@ -35,6 +77,7 @@ class Resource_Monitor():
 #    def close(self):
 #        if self.t.is_alive():
 
+    #User number operation
     def getuser(self):
         return self._user_number
 
@@ -44,20 +87,22 @@ class Resource_Monitor():
     def dropuser(self):
         self._user_number-=1
 
+    #Nodes setting
     def setNodes(self,nodes):
         self._nodes = nodes
 
     def getNodes(self,nodes):
         return self._nodes
 
+    #Cluster information operation
     def _get_cluster_info():
         while True:
-            self._cluster_info()
-            time.sleep(5)
+            self._cluster_info() #Get cluster information every 60s
+            time.sleep(60)
             if self._user_number==0:
                 break
 
-    def _cluster_info(self):
+    def _cluster_info(self): #Get cluster information
         nodes = self._nodes
         proc,node_info={},[]
         for nd in nodes:
@@ -78,7 +123,9 @@ class Resource_Monitor():
     def show_cluster_info(self):#now it's only for the stdout.
         return self._node_info
 
-
+    def GetBestNode(self):
+        pass
+        return status,node
 
 import operator
 if __name__=="__main__":
