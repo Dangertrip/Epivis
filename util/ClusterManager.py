@@ -21,41 +21,6 @@ def escape( cmd_list ):
             #escaped_cmd_list[ii] = "'\\'" + escaped_cmd_list[ii] + "\\''"
     return escaped_cmd_list
 
-
-def usage(text):
-    if text: print >>sys.stderr, 'Error: %s\n' % text
-    print >>sys.stderr, "usage: xrun [options] 'command' "
-    print >>sys.stderr, 'options:'
-    print >>sys.stderr, '        -n<int>   specify node id. 0 for selenium. when id is specified, "xrund" is just a parallel "for" command. default: all'
-    print >>sys.stderr, '        -p<str>   specify name of the file that logs names of seed, host, and pid for each thread of this run. defaut xd."seconds".qst.'
-    print >>sys.stderr, '        -m<str>   specify memory requirement in units K,M or G, i.e. -m1.5G, -m256M. default: 3G'
-    print >>sys.stderr, '        -c<float> specity number of cpus required, i.e. -c3.5. default 1'
-    print >>sys.stderr, '        -w<int>   specify number of minutes between retry. default: 0 (no retry)'
-    print >>sys.stderr, '        -v        verbose mode. default: Off'
-    print >>sys.stderr, '        -i        display cluster information.'
-    print >>sys.stderr, '        -x       external parameter.'
-    print >>sys.stderr, '        -h        help.'
-    print >>sys.stderr, 'command: quote the string with strange characters. quote the file name with *, which is expanded and passed to internal variable $seed. see examples.'
-    print >>sys.stderr, 'EXAMPLES:'
-    print >>sys.stderr, "        xrund -v ls 'P*export.txt.bed' '&& cp $seed.macs.wig.refGene /tmp/ && /home/deqiangs/bin/Python/bin/ceas --name=$seed.macs.ceas  -g /tmp/$seed.macs.wig.refGene -b $seed.macs_peaks.bed -w $seed.macs.wig' "
-    print >>sys.stderr, "        xrund -v ls '*.export.txt.bed' '&& /pillar_storage/pillar00/deqiangs/data/RXRa/macswig.py $seed.macs_MACS_wiggle/treat $seed.macs.wig mm9 20000000  && /home/deqiangs/bin/Python/bin/ceas --name=$seed.macs.ceas  -g /tmp/mm9refGene -b $seed.macs_peaks.bed -w $seed.macs.wig' "
-    print >>sys.stderr, "        xrund -v macs -t 'P*.bed'  '--control=Input_export.txt.bed --name=$seed.macs --format=BED --tsize=36 --bw=200 --pvalue=1e-10 --wig --wigextend=200' "
-    print >>sys.stderr, "        xrund -v '../eland_export_to_bed2.py' '*export.txt' '$seed.bed' '2' "
-    print >>sys.stderr, "        xrund -v -m8G '/home/liguow/tools/maq-0.7.1/scripts/fq_all2std.pl export2sol' '*.export.txt' '>' '$seed.sol_fastq' "
-    print >>sys.stderr, "        xrund -v -m6G '../eland_export_basic_stat2.pl' '*export.txt' '$seed.stat' '2' "
-    print >>sys.stderr, "        xrund -v perl -p -i -n -e 's/\./0/' 'export2/*.txt.bed' "
-    print >>sys.stderr, "        xrund -v  cat 'export2/*.txt.bed' '| grep chrM >$(hostname).$$.log.chrM' "
-    print >>sys.stderr, "        xrund -v  xrund -v -m2G cp '*.wig' '$seed.wigcopy' "
-    print >>sys.stderr, "        xrund -c8 -m22G -w5 soap -a a.fa -d d.fa -o c.out"
-    print >>sys.stderr, "        xrund 'gunzip *' "
-    print >>sys.stderr, "        xrund -w5 -c6 -m128M someprogram par1 par2 && xrund -v 'tar -czvf $seed.tar.gz' '*fastq' "
-    print >>sys.stderr, "        xrund -n0 ceas -b a.bed -w b.wig --name=abc"
-    print >>sys.stderr, 'NOTE: You need protect the string that contains the * with quotes. Except this, just type any command as you would type usually.'
-    print >>sys.stderr, '           To be safe, you may quote all other strings into several parts if you are not sure which special character should be quoted. '
-    print >>sys.stderr, '           Since glob.glob is used to do expansion, only * ? and [] are supported. Do not try to expand ,eg {}. '
-    print >>sys.stderr, "           If you do not want expansion seperated commands, you need quote the whole command. For example, xrund -v 'cat P*.bed > P.bed' "
-    exit(1)
-
 class MyThread(threading.Thread):
 
     def __init__(self, node, cwd, commandline, seed, ptable, external_par):
@@ -82,51 +47,93 @@ class MyThread(threading.Thread):
 def echo(text):
     if verbose: print >> sys.stderr, '%s' % text
 
-def cluster_info(nds=None):
-    proc, node_info = {}, []
-    if nds is None: nds = ['compute-0-%s' % ii for ii in nodeids]
-    #print(nds)
-    for nd in nds:
-        cmd = "ssh %s '%s' 2> /dev/null" %(nd,'cat /proc/loadavg /proc/meminfo /proc/cpuinfo')
-        proc[nd] = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-    time.sleep(0.01)
-    for nd in nds:
-        info = proc[nd].stdout.readlines()
-        if any(info):
-            node_mem = int(info[2].split()[1]) + int(info[3].split()[1]) + int(info[4].split()[1])
-            node_ncpu = len([x for x in info if 'processor\t:' in x])
-            node_load = float(info[0].split()[0])
-            node_info.append([nd,node_mem,node_ncpu,node_load,node_ncpu-node_load])
-    return node_info
+#====================================Resource_Monitor============================================
+def singleton(cls, *args, **kws)
+    instances = {}
+    def _singleton():
+        if cls not in instances:
+            instances[cls]=cls(*args,**kw)
+        return instances[cls]
+    return _singleton
 
-def show_cluster_info(): #to stdout
-    node_info = cluster_info()
-    print('node\tfree_mem\tidle_cpu/total_cpu')
-    for nd in ['compute-0-%s' % ii for ii in nodeids]:
-        try:
-            nd,node_mem,node_ncpu,node_load,idle_cpu = [x for x in node_info if x[0]==nd][0]
-            print('%s\t%.1fG\t%.1f/%d') % (nd,node_mem/1048576.0,idle_cpu,node_ncpu)
-        except IndexError: print('%s\tNA')% nd
-    exit()
+@singleton
+class Resource_Monitor():
+
+    def __init__(self):
+        #Create a new thread and stop it when every user close their window
+        self._user_number=1
+        self.t = threading.Thread(self._get_cluster_info)
+        self.t.setDaemon()
+        self.t.start()
+
+#    def close(self):
+#        if self.t.is_alive():
+
+
+    def adduser(self):
+        self._user_number+=1
+
+    def dropuser(self):
+        self._user_number-=1
+
+    def setNodes(self,nodes):
+        self._nodes = nodes
+
+    def getNodes(self,nodes):
+        return self._nodes
+
+    def _get_cluster_info():
+        while True:
+            self._cluster_info()
+            time.sleep(5)
+            if self._user_number==0:
+                break
+
+    def _cluster_info(self):
+        nodes = self._nodes
+        proc,node_info={},[]
+        for nd in nodes:
+            cmd = "ssh %s '%s' 2 > /dev/null" %(nd,'cat /proc/loadavg /proc/meminfo /proc/cpuinfo')
+            proc[nd] = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+        time.sleep(0.5)
+        for nd in nodes:
+            info = proc[nd].stdout.readlines()
+            for i in range(len(info)):
+                info[i]=info[i].decode('utf-8')
+            if any(info):
+                node_mem = int(info[2],split()[1])+int(info[3].split()[1])+int(info[4],split()[1])
+                node_ncpu = len([x for x in info if 'processor\t:' in x])
+                node_load = float(info[0].split()[0])
+                node_info.append([node,node_mem,node_cpu,node_load,node_cpu-node_load])
+        self._node_info=node_info
+
+    def show_cluster_info(self):#now it's only for the stdout.
+        return self._node_info
+
+
 
 import operator
 if __name__=="__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument('-n','--node',help='',type=int)
     parser.add_argument('-p','--ptable',help='',type=int)
-    parser.add_argument('-m','--memory',help='')
-    parser.add_argument('-c','--cpu',help='',type=float)
-    parser.add_argument('-v','--verbose',type=bool)
+    parser.add_argument('-m','--memory',help='',default=1024*1024)
+    parser.add_argument('-c','--cpu',help='',type=float,default=2)
+    parser.add_argument('-v','--verbose',action="store_false")
     parser.add_argument('-w','--wait',type=int)
-    parser.add_argument('-i','--show')
+    parser.add_argument('-i','--show',action="store_false")
     parser.add_argument('-x','--external_par',type=int)
     args=parser.parse_args()
     nodes = ['compute-0-0','compute-0-1','compute-0-2','compute-0-3','compute-0-5']#add by yyin for testing
     #echo('%s, getting cluster info ...' % time.asctime())
     node_info = sorted(cluster_info(nodes), key=operator.itemgetter(1),reverse=True)
-    print(node_info)
-    exit()
-    good_nodes = [x for x in node_info if x[1]>=memory and x[4]>cpu]
+    #print(node_info)
+    #exit()
+#I think I need to change the program to a unstopabble listening class, which could know cpu and memory info
+#any time. When people open the website, I should set a class there and make it Singleton. Every account in
+#the same cluster can ask for information from this class. This class should be destoried after the last
+#person closed his window.
+    good_nodes = [x for x in node_info if x[1]>=args.memory and args.x[4]>args.cpu]
     while len(good_nodes)==0:
         echo('No avaliable node with sufficient resource.')
         if not wait: exit(1)
