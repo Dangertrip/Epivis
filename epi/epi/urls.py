@@ -17,5 +17,6 @@ from django.conf.urls import url
 from django.contrib import admin
 
 urlpatterns = [
+    url(r'^epivis/',incluse('epivis.urls')),
     url(r'^admin/', admin.site.urls),
 ]
