@@ -1,20 +1,20 @@
 #! /usr/bin/env python
 import sys, glob, os, time, subprocess, threading, pprint
 import argparse
-from Queue import Queue
+from queue import Queue
 ##xrund -v perl -p -i -n -e 's/\./0/' 'export2/*.txt.bed'         RUNS OK!!!!
 ##xrund -v  cat 'export2/*.txt.bed' '| grep chrM >$(hostname).$$.log.chrM'
 
 
 #====================================Resource_Monitor============================================
 def Single_Job_Process(job,node):
+    pass
 
-
-def singleton(cls, *args, **kws)
+def singleton(cls):
     instances = {}
-    def _singleton():
+    def _singleton(*args,**kws):
         if cls not in instances:
-            instances[cls]=cls(*args,**kw)
+            instances[cls]=cls(*args,**kws)
         return instances[cls]
     return _singleton
 
@@ -67,11 +67,13 @@ class Job_Queue(Queue):
 @singleton
 class Resource_Monitor():
 
-    def __init__(self):
+    def __init__(self,nodes=None):
         #Create a new thread and stop it when every user close their window
         self._user_number=1
-        self.t = threading.Thread(self._get_cluster_info)
-        self.t.setDaemon()
+        self._nodes = nodes
+        self._node_info=None
+        self.t = threading.Thread(target=self._get_cluster_info)
+        self.t.daemon=True
         self.t.start()
 
 #    def close(self):
@@ -90,12 +92,13 @@ class Resource_Monitor():
     #Nodes setting
     def setNodes(self,nodes):
         self._nodes = nodes
+        print(self._nodes)
 
     def getNodes(self,nodes):
         return self._nodes
 
     #Cluster information operation
-    def _get_cluster_info():
+    def _get_cluster_info(self):
         while True:
             self._cluster_info() #Get cluster information every 60s
             time.sleep(60)
@@ -104,28 +107,46 @@ class Resource_Monitor():
 
     def _cluster_info(self): #Get cluster information
         nodes = self._nodes
+
+        #Get all the cpu and memory information through ssh
         proc,node_info={},[]
+        mem={}
         for nd in nodes:
-            cmd = "ssh %s '%s' 2 > /dev/null" %(nd,'cat /proc/loadavg /proc/meminfo /proc/cpuinfo')
+            cmd = "ssh %s '%s'" %(nd,'cat /proc/loadavg /proc/meminfo /proc/cpuinfo')
+            #print(cmd)
             proc[nd] = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
+            #mem[nd] = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
         time.sleep(0.5)
+
+        #Process the result and extract useful numbers
         for nd in nodes:
             info = proc[nd].stdout.readlines()
             for i in range(len(info)):
                 info[i]=info[i].decode('utf-8')
             if any(info):
-                node_mem = int(info[2],split()[1])+int(info[3].split()[1])+int(info[4],split()[1])
+                node_mem = int(info[2].split()[1])+int(info[3].split()[1])+int(info[4].split()[1])
                 node_ncpu = len([x for x in info if 'processor\t:' in x])
                 node_load = float(info[0].split()[0])
-                node_info.append([node,node_mem,node_cpu,node_load,node_cpu-node_load])
+                node_info.append([nd,node_mem,node_ncpu,node_load,node_ncpu-node_load])
         self._node_info=node_info
 
     def show_cluster_info(self):#now it's only for the stdout.
+        while self._node_info==None:
+            pass
         return self._node_info
+    #Name   Node_Memory Node_ncpu   Node_load   Node_ncpu-Node_load
 
-    def GetBestNode(self):
-        pass
-        return status,node
+    def GetBestNode(self,job):
+        good_node_list=[]
+        cpu=job.cpu
+        mem=job.memory
+        chosen_node=None
+        status=False
+        for node in self._node_info:
+            if node[1]>mem and node[-1]>cpu:
+                status=True
+                chosen_node=node
+        return status,chosen_node
 
 import operator
 if __name__=="__main__":
@@ -141,13 +162,17 @@ if __name__=="__main__":
     args=parser.parse_args()
     nodes = ['compute-0-0','compute-0-1','compute-0-2','compute-0-3','compute-0-5']#add by yyin for testing
     #echo('%s, getting cluster info ...' % time.asctime())
-    node_info = sorted(cluster_info(nodes), key=operator.itemgetter(1),reverse=True)
+    rm = Resource_Monitor(nodes)
+    #rm.setNodes(nodes)
+    print(rm.show_cluster_info())
+    #node_info = sorted(cluster_info(nodes), key=operator.itemgetter(1),reverse=True)
     #print(node_info)
     #exit()
 #I think I need to change the program to a unstopabble listening class, which could know cpu and memory info
 #any time. When people open the website, I should set a class there and make it Singleton. Every account in
 #the same cluster can ask for information from this class. This class should be destoried after the last
 #person closed his window.
+'''
     good_nodes = [x for x in node_info if x[1]>=args.memory and args.x[4]>args.cpu]
     while len(good_nodes)==0:
         echo('No avaliable node with sufficient resource.')
@@ -244,7 +269,7 @@ except KeyboardInterrupt:
         os.system("ssh %s 'kill -9 %s'" % ( node_kill, pid_kill ) )
 
     sys.exit(1)
-
+'''
 ##
 ##xrund -v cat 'export2/*.txt.bed' '>log.$(hostname).$$.log && echo log.$$.$(hostname).log'
 ##[deqiangs@selenium RXRa]$ xrund -v perl -p -i -n -e 's/\./0/' 'export2/*.txt.bed'
