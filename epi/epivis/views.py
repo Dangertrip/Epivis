@@ -24,6 +24,7 @@ def index(request):
 def login(request):
     username = request.POST['username']
     password = request.POST['password']
+    #User.objects.filter()
     #query = #get user information
     #if #No user has this username and password:
     #    request.session['login']=3

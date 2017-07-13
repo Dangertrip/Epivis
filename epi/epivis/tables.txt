@@ -1,0 +1,15 @@
+To install this system, people need to set up a brand new account in Linux. All the operations 
+will be count on this account.
+
+
+User:
+userid  (primary key)
+username
+password
+basemount point
+cache position        #Still don't know we should keep all the files together or seperately
+settings
+
+Files:
+
+
