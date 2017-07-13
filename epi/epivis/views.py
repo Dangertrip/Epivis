@@ -19,18 +19,18 @@ def index(request):
             request.session.pop('login')
         else:
             username = request.session['username']
-    return render(request,'epivis/index.html',{'login',checklogin(request),'returnstring':returnstring, 'name': username})
+    return render(request,'epivis/index.html',{'login':checklogin(request),'returnstring':returnstring, 'name': username})
 
 def login(request):
     username = request.POST['username']
     password = request.POST['password']
-    query = #get user information
-    if #No user has this username and password:
-        request.session['login']=3
-        return index(request)
-    else:
-        request.session['login']=1
-        request.session['username']=username
-        return index(request)
+    #query = #get user information
+    #if #No user has this username and password:
+    #    request.session['login']=3
+    #    return index(request)
+    #else:
+    #    request.session['login']=1
+    #    request.session['username']=username
+    #    return index(request)
 
 
