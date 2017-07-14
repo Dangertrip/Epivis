@@ -24,6 +24,15 @@ def index(request):
 def login(request):
     username = request.POST['username']
     password = request.POST['password']
+    account=User.object.filter(username = username, password=password)
+    if len(account)!=1:
+        request.session['login']=3
+        return index(request)
+    else:
+        request.session['username']=username
+        return menu(request)
+
+
     #User.objects.filter()
     #query = #get user information
     #if #No user has this username and password:
@@ -35,3 +44,8 @@ def login(request):
     #    return index(request)
 
 
+def menu(request):
+    if not checklogin(request):
+        return index(request)
+    username=request.session['username']
+    return render(request,'epivis/menu.html',{'username':username})
