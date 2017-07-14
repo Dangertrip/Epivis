@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from 
 # Create your views here.
 
 def checklogin(request):
@@ -14,12 +15,10 @@ def index(request):
     if 'login' in request.session:
         if not checklogin(request):
             returnstring = 'Wrong username or wrong password!'
-            if request.session['login'] == 2:
-                returnstring = 'Please login first!'
             request.session.pop('login')
         else:
-            username = request.session['username']
-    return render(request,'epivis/index.html',{'login':checklogin(request),'returnstring':returnstring, 'name': username})
+            menu(request)
+    return render(request,'epivis/index.html',{'returnstring':returnstring})
 
 def login(request):
     username = request.POST['username']
@@ -29,6 +28,7 @@ def login(request):
         request.session['login']=3
         return index(request)
     else:
+        request.session['login']=1
         request.session['username']=username
         return menu(request)
 
