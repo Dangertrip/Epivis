@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from 
+from .Test.module import * 
 # Create your views here.
 
 def checklogin(request):
@@ -10,6 +10,8 @@ def checklogin(request):
     return False
 
 def index(request):
+    cal1()
+    print(cal1())
     name=''
     returnstring=''
     if 'login' in request.session:
