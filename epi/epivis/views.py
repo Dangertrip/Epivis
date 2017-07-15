@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import HttpResponse
 from .Test.module import * 
 # Create your views here.
@@ -10,8 +10,11 @@ def checklogin(request):
     return False
 
 def index(request):
-    cal1()
-    print(cal1())
+    #cal1()
+    #print(cal1())
+    #cm=cluster_manager()
+    #jq=job_queue()
+    #if cm==None: redirect('/epivis/settings') 
     name=''
     returnstring=''
     if 'login' in request.session:

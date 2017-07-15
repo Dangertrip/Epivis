@@ -147,8 +147,20 @@ class Resource_Monitor():
         return status,chosen_node
 
 import operator
-#_cluster_manager = Resource_Monitor()
-#_job_queue = Job_Queue()
+
+#node=GetSettingInfo()
+#if node==[]
+_cluster_manager = None#Resource_Monitor()  #setup setting files first
+_job_queue = None#Job_Queue() #
+
+#develop a setup page so user can set up the basemount path, nodes, cache_path first.
+
+def cluster_manager():
+    return _cluster_manager
+
+def job_queue():
+    return _job_queue
+
 if __name__=="__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument('-n','--node',help='',type=int)
@@ -170,121 +182,4 @@ if __name__=="__main__":
     #exit()
 #I think I need to change the program to a unstopabble listening class, which could know cpu and memory info
 #any time. When people open the website, I should set a class there and make it Singleton. Every account in
-#the same cluster can ask for information from this class. This class should be destoried after the last
-#person closed his window.
-'''
-    good_nodes = [x for x in node_info if x[1]>=args.memory and args.x[4]>args.cpu]
-    while len(good_nodes)==0:
-        echo('No avaliable node with sufficient resource.')
-        if not wait: exit(1)
-        time.sleep(wait)
-        echo('%s, retry getting node info ...' % time.asctime())
-        node_info = sorted(cluster_info(nodes), key=operator.itemgetter(4))
-        good_nodes = [x for x in node_info if x[1]>=memory and x[4]>cpu]
-
-
-pprint.pprint(good_nodes, sys.stderr)
-
-ncommand, sleep, command_list, expanded_names = 1, 0.001, [], []
-
-for opt in command:
-
-    filenames = sorted(glob.glob(opt))
-
-    if len(filenames) == 0: command_list.append([opt])
-    else:
-        echo("Your input %s is epanded to %s" %(opt, filenames) )
-        expanded_names = filenames
-        command_list.append(filenames)
-        ncommand *= len(filenames)
-
-
-allthreads=[]
-for i in xrange(ncommand):
-    command, ii = [], i
-    for arg in command_list:
-        command.append(arg[ii%len(arg)])
-        ii /= len(arg)
-
-    command = escape( command )
-    commandline = ' '.join(command)
-
-
-    node, free_mem, n_cpu, cpu_load, idle_cpu = good_nodes[0]
-    good_nodes.append( good_nodes[0])
-    del good_nodes[0]
-
-    seed = ''
-    if( len(expanded_names) > 0 ):
-        seed = expanded_names[ i ]
-        seed = seed.rsplit('/')[-1]
-
-    echo('')
-    print >> sys.stderr, 'Running command %s on %s (free_mem:%dMB, idle_cpu/total_cpu:%.1f/%d)' % (commandline, node,free_mem/1024,idle_cpu,n_cpu)
-
-    mythread = MyThread(node, os.getcwd(), commandline, seed, ptable, external_par)
-
-    mythread.start()
-
-    allthreads.append(mythread)
-    time.sleep(sleep)
-
-print >> sys.stderr, "\nAll threads started.............................................................................\n"
-
-
-
-import signal
-def signal_handler(signal, frame):
-    print >> sys.stderr, "Ooops, you pressed ctrl + c"
-    raise KeyboardInterrupt
-
-##stupid python thread
-##method 1: os.kill( os.getpid() , signal )
-##method 2: thread.interrupt_main() from inside child thread
-##method 3: sigal.signal call here with raise of exception.
-try:                        ##it's interesting that first ctrl+c kills all child threads and second ctrl+c kills the main thread.
-    while(True):
-        signal.signal(signal.SIGINT, signal_handler)
-        for athread in allthreads:
-            athread.join(1)
-        time.sleep(1)
-        if( threading.activeCount() == 1): # 1 for main thread
-            all_exit = 0
-            for athread in allthreads:
-                if ( athread.get_exit_code() != 0 ):
-                    print >> sys.stderr, "%s is exiting with code %s. please check seed %s node %s!" %( athread.getName(), athread.exit_code, athread.seed, athread.node)
-                    all_exit = 1
-
-            if(all_exit == 0):
-                print >> sys.stderr, 'OK. All threads exit with code 0.........................................................................'
-            sys.exit(all_exit)
-
-except KeyboardInterrupt:
-
-    for athread in allthreads:
-        print >> sys.stderr, "%s: exit code %s. seed %s node %s!" %( athread.getName(), athread.exit_code, athread.seed, athread.node)
-        fields = os.popen("grep %s %s" %(athread.seed, ptable) ).readline().rsplit(':')
-        node_kill = fields[1]
-        pid_kill    = fields[2]
-        os.system("ssh %s 'kill -9 %s'" % ( node_kill, pid_kill ) )
-
-    sys.exit(1)
-'''
-##
-##xrund -v cat 'export2/*.txt.bed' '>log.$(hostname).$$.log && echo log.$$.$(hostname).log'
-##[deqiangs@selenium RXRa]$ xrund -v perl -p -i -n -e 's/\./0/' 'export2/*.txt.bed'
-##XRUND item # -v
-##XRUND item # perl
-##XRUND item # -p
-##XRUND item # -i
-##XRUND item # -n
-##XRUND item # -e
-##XRUND item # s/\./0/
-##XRUND item # export2/*.txt.bed
-##XRUND# Fri May 14 22:21:11 2010, getting cluster info ...
-##XRUND# Running command perl -p -i -n -e '\'s/\\./0/\'' export2/Input_export.txt.bed on selenium002 (free_mem:31692MB, idle_cpu/total_cpu:8.0/8)
-##XRUND# Actually the full commandline is : ssh selenium002 'cd /pillar_storage/pillar00/deqiangs/data/RXRa && perl -p -i -n -e '\'s/\\./0/\'' export2/Input_export.txt.bed'
-##XRUND# Exit code: 0 from on node selenium002
-##on the actual node:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-##deqiangs 18502  0.0  0.0  63796  1216 ?        Ss   21:18   0:00 bash -c cd /pillar_storage/pillar00/deqiangs/data/RXRa && perl -p -i -n -e s/\\./0/ export2/PMWT_315.export.txt.bed
-##deqiangs 18523 99.0  0.0  77808  1472 ?        R    21:18   0:00 perl -p -i -n -e s/\./0/ export2/PMWT_315.export.txt.bed
+#the same cluster can ask for information from this class. This class should be destoried after the last user close his window.
