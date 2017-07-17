@@ -1,0 +1,12 @@
+<html>
+<form action="{% url 'epivis:set_meta' %}" method="post">
+	{% csrf_token %}
+	<label for="cache_path">Cache Path</label>
+	<input type="text" name="cache_path" id="cache_path" value="{{ cache_path }}">
+	{% for node in nodes %}
+		<label for="{{ node }}">{{ node }}</label>
+		<input type="checkbox" name="{{ node }}" id="{{ node }}" checked>
+	{% endfor %}
+	<input type="submit" value="Submit">
+</form>
+</html>

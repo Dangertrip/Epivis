@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from django.http import HttpResponse
 from .Test.module import *
 from .util.ParseMetaInfo import *
+from .util.GetNode import GetNode
 
 # Create your views here.
 
@@ -38,14 +39,23 @@ def login(request):
     else:
         request.session['login']=1
         request.session['username']=username
-        #full_info,info = getmetainfo()
-        if username=='root':
-            pass#Set metainfo when metainfo is not enouth to run the system
-                #If metainfo is completed, run redirect(menu)
-        else:
-            pass #Set personal info when personal info is not setup. If it's completed, redirect(menu)
-        #if account.basemount_point=='-' and account.cache_path=='-'
+        try:
+            from ClusterManager import *
+        except Exception:
+            if username!='root':
+                print('error')
+                return redirect(index)
+            else:
+                return render(request,'epivis/set_meta.html',{'nodes':GetNode(),'cache_path':cache_path})#redirect(setting_meta)
+        
         return menu(request)
+
+def get_meta(request):
+    print('Get_meta')
+    cache_path = request.POST['cache_path']
+    nodes = request.POST['nodes']
+    SetMeta(cache_path,nodes)
+    return redirect(login)
 
 
     #User.objects.filter()
@@ -60,6 +70,7 @@ def login(request):
 
 
 def menu(request):
+    pass
     if not checklogin(request):
         return index(request)
     username=request.session['username']

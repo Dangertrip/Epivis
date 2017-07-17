@@ -1,6 +1,7 @@
 from xml.etree import ElementTree as ET
+from xml.dom import minidom
 import os
-from .GetNode import *
+from GetNode import *
 
 #Check legality of computational nodes.
 def _check_node(node):
@@ -20,7 +21,8 @@ def _check_cache(path):
     permission=oct(os.stat(prepath).st_mode)[-3:]
     if permission=='755':
         os.mkdir(path)
-    else return False
+    else: 
+        return False
     return True
 
 
@@ -52,5 +54,23 @@ def getmetainfo():
         mark=False
     return mark,node,cache_path
 
+def SetMeta(cache_path,nodes):
+    xml = minidom.Document()
+    root = xml.createElement('meta')
+    xml.appendChild(root)
+    cache = xml.createElement('cache_path')
+    root.appendChild(cache)
+    text = xml.createTextNode(cache_path)
+    cache.appendChild(text)
+    #print(xml.toprettyxml(encoding='utf-8'))
+    for node in nodes:
+        n = xml.createElement('node')
+        root.appendChild(n)
+        text = xml.createTextNode(node)
+        n.appendChild(text)
+
+    with open('metasetting.xml','w') as f:
+        f.write(xml.toprettyxml(encoding='utf-8').decode('utf-8'))
+
 if __name__=="__main__":
-    print("TEST")
+    SetMeta('aaa',['1','2'])

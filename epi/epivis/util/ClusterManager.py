@@ -147,10 +147,16 @@ class Resource_Monitor():
         return status,chosen_node
 
 import operator
+from ParseMetaInfo import getmetainfo
 
-#node=GetSettingInfo()
-#if node==[]
-_cluster_manager = None#Resource_Monitor()  #setup setting files first
+mark,node,cache_path = getmetainfo()
+if not mark:
+    raise Exception('Error in meta info!') 
+
+'''
+After checking the mera information, we could get the resource_monitor and job_queue
+'''
+_cluster_manager = None#Resource_Monitor(node) 
 _job_queue = None#Job_Queue() #
 
 #develop a setup page so user can set up the basemount path, nodes, cache_path first.
