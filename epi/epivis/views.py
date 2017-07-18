@@ -16,9 +16,9 @@ def index(request):
     #cal1()
     #print(cal1())
     #cm=cluster_manager()
-    getmetainfo('1.txt')
+    getmetainfo()
     #jq=job_queue()
-    #if cm==None: redirect('/epivis/settings') 
+    #if cm==None: redirect('/epivis/settings')
     name=''
     returnstring=''
     if 'login' in request.session:
@@ -47,7 +47,7 @@ def login(request):
                 return redirect(index)
             else:
                 return render(request,'epivis/set_meta.html',{'nodes':GetNode(),'cache_path':cache_path})#redirect(setting_meta)
-        
+
         return menu(request)
 
 def get_meta(request):

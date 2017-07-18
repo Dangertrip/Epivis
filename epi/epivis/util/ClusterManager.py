@@ -19,6 +19,12 @@ def singleton(cls):
 @singleton
 class Job_Queue(Queue):
 
+    class _job():
+
+        def __init__(self,cmd,priority):
+            self.cmd=cmd
+            self.priority=priority
+
     def __init__(self):
         Queue.__init__(self,1000)
         self.t = threading.Thread(self.process())
@@ -27,6 +33,10 @@ class Job_Queue(Queue):
         self.threadpool=[]
         #store all the threads of processing tasks, when thread.is_alive is False, join the thread.
         self.close_tag=False
+
+    def newJob(self,cmd,priority=1):
+        job = _job(cmd,priority)
+        self.push(job)
 
     #For each job in job_queue, we select a best node to run the task.
     def process(self,rm):
@@ -151,12 +161,12 @@ from ParseMetaInfo import getmetainfo
 
 mark,node,cache_path = getmetainfo()
 if not mark:
-    raise Exception('Error in meta info!') 
+    raise Exception('Error in meta info!')
 
 '''
 After checking the mera information, we could get the resource_monitor and job_queue
 '''
-_cluster_manager = None#Resource_Monitor(node) 
+_cluster_manager = None#Resource_Monitor(node)
 _job_queue = None#Job_Queue() #
 
 #develop a setup page so user can set up the basemount path, nodes, cache_path first.
