@@ -6,7 +6,14 @@ from queue import Queue
 
 #====================================Resource_Monitor============================================
 def Single_Job_Process(job,node):
-    pass
+    cmd = job.cmd
+    fullcmd = "ssh %s '%s'" %(node,cmd)
+    job.fullcmd=fullcmd
+    p = subprocess.Popen(fullcmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    out,err=p.communicate()
+    job.out = out
+    job.err = err
+
 
 def singleton(cls):
     instances = {}
@@ -24,6 +31,22 @@ class Job_Queue(Queue):
         def __init__(self,cmd,priority):
             self.cmd=cmd
             self.priority=priority
+            self.status=0
+            self.fullcmd="Haven't run yet"
+            self.out="Haven't run yet"
+            self.err="Haven't run yet"
+            '''
+            Job Status:
+            0: Waiting
+            1:Processing
+            2:Done
+            '''
+
+        @classmethod
+        def recordjob(job,updateMark=False):
+            pass
+            #import model.job and record all these stuff in job table
+            #if updateMark: update else: insert
 
     def __init__(self):
         Queue.__init__(self,1000)
@@ -31,12 +54,14 @@ class Job_Queue(Queue):
         #process the jobs in queue one by one.
         self.t.start()
         self.threadpool=[]
+        self.processing_job_queue=[]
         #store all the threads of processing tasks, when thread.is_alive is False, join the thread.
         self.close_tag=False
 
     def newJob(self,cmd,priority=1):
         job = _job(cmd,priority)
         self.push(job)
+        _job.recordjob(job)
 
     #For each job in job_queue, we select a best node to run the task.
     def process(self,rm):
@@ -55,6 +80,9 @@ class Job_Queue(Queue):
             #Get another thread to run the single job
             j = threading.Thread(Single_Job_Process,job,node)
             self.threadpool.append(j)
+            self.processing_job_queue.append(job)
+            job.status = 1
+            _job.recordjob(job,True)
             del_task=[]
             for i in range(len(threadpool)):
                 if not self.threadpool[i].is_alive():
@@ -62,6 +90,8 @@ class Job_Queue(Queue):
                     del_task.append(i)                   #delete jobs that has been finished
             for i in range(len(del_task)):                  #Need to add a update job status function
                 del self.threadpool[del_task[i]-i]
+                self.processing_job_queue[del_task[i]-i].status=2
+                _job.recordjob(self.processing_job_queue[del_task[i]-i],True)
         for tt in self.threadpool:
             tt.join()
 
