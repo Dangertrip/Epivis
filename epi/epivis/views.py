@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from .Test.module import *
 from .util.ParseMetaInfo import *
 from .util.GetNode import GetNode
+from .models import *
 
 # Create your views here.
 

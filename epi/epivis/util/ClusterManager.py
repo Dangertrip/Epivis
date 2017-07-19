@@ -2,7 +2,7 @@
 import sys, glob, os, time, subprocess, threading, pprint
 import argparse
 from queue import Queue
-
+from Models import Jobs
 
 #====================================Resource_Monitor============================================
 def Single_Job_Process(job,node):
@@ -42,13 +42,18 @@ class Job_Queue(Queue):
             2:Done
             '''
 
-        @classmethod
-        def recordjob(job,updateMark=False):
-            pass
-            #import model.job and record all these stuff in job table
-            #if updateMark: update else: insert
+            @classmethod
+            def recordjob(job,updateMark=False):
+                if updateMark:
+                    pass
+                else:
+                    self.id = Jobs.id
+                    pass
+                #store job in self.model
+                #import model.job and record all these stuff in job table
+                #if updateMark: update else: insert
 
-    def __init__(self):
+    def __init__(self,Model):
         Queue.__init__(self,1000)
         self.t = threading.Thread(self.process())
         #process the jobs in queue one by one.
@@ -57,6 +62,7 @@ class Job_Queue(Queue):
         self.processing_job_queue=[]
         #store all the threads of processing tasks, when thread.is_alive is False, join the thread.
         self.close_tag=False
+        self.model=Model
 
     def newJob(self,cmd,priority=1):
         job = _job(cmd,priority)
@@ -78,11 +84,16 @@ class Job_Queue(Queue):
                 status,node = rm.GetBestNode()
 
             #Get another thread to run the single job
+            MaxThreadPool=8
+            while len(threadpool)>MaxThreadPool:
+                continue
+
             j = threading.Thread(Single_Job_Process,job,node)
             self.threadpool.append(j)
             self.processing_job_queue.append(job)
             job.status = 1
             _job.recordjob(job,True)
+            j.start()
             del_task=[]
             for i in range(len(threadpool)):
                 if not self.threadpool[i].is_alive():
@@ -198,7 +209,7 @@ After checking the mera information, we could get the resource_monitor and job_q
 '''
 _cluster_manager = None#Resource_Monitor(node)
 _job_queue = None#Job_Queue() #
-
+sys.path.append('../')
 #develop a setup page so user can set up the basemount path, nodes, cache_path first.
 
 def cluster_manager():
