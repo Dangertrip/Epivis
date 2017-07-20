@@ -2,7 +2,7 @@
 import sys, glob, os, time, subprocess, threading, pprint
 import argparse
 from queue import Queue
-from Models import Jobs
+from models import Jobs
 
 #====================================Resource_Monitor============================================
 def Single_Job_Process(job,node):

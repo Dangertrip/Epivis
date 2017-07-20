@@ -1,7 +1,7 @@
 from xml.etree import ElementTree as ET
 from xml.dom import minidom
 import os
-from GetNode import *
+from .GetNode import *
 
 #Check legality of computational nodes.
 def _check_node(node):

@@ -41,7 +41,7 @@ def login(request):
         request.session['login']=1
         request.session['username']=username
         try:
-            from ClusterManager import *
+            from ClusterManager import cluster_manager,job_queue
         except Exception:
             if username!='root':
                 print('error')
