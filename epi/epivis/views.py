@@ -90,3 +90,7 @@ def menu(request):
         return index(request)
     username=request.session['username']
     return render(request,'epivis/menu.html',{'username':username})
+
+def show_file(request):
+#Get file information from sql and form json for javascript
+

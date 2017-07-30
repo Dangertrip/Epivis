@@ -8,9 +8,9 @@ from .ClusterManager import job_queue
 class FileSystem():
 
     def __init__(self,mountpoint,cwd):
-        self._path = mountpoint
-        if self._path[-1]!='/':
-            self._path+='/'
+       # self._path = mountpoint
+       # if self._path[-1]!='/':
+       #     self._path+='/'
         self._cwd = cwd
         if self._cwd[-1]!='/':
             self._cwd+='/'
@@ -21,13 +21,13 @@ class FileSystem():
     def Unmount(self):
         out = subprocess.call("basemount --unmount "+self._path,shell=True)
 '''
-    def reload(account,password):
+    def reload(account,password,path):
         ssh = paramiko.SSHClient()
         s.load_system_host_keys()
         s.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         s.connect(hostname="127.0.0.1",port=22,username=account,password=password)
-        s.exec_command("basemount "+self._path)
-        s.exec_command("basemount --unmount "+self._path)
+        s.exec_command("basemount "+path)
+        s.exec_command("basemount --unmount "+path)
         s.close()
 
     def preset_folder(self,projects):
@@ -50,7 +50,7 @@ class FileSystem():
 
         return True
 
-    def download(self,downloadlist):
+    def download(self,downloadlist,path):
         #check whether file have been download
         tasks=[]
 
@@ -58,7 +58,7 @@ class FileSystem():
             project = None
             sample = None
             filename = None
-            original_filepath=self._path+'Projects/'+project+'/Samples/'+sample+'/Files/'+filename
+            original_filepath=path+'Projects/'+project+'/Samples/'+sample+'/Files/'+filename
             aim_path = _cwd+project+'/'+sample+'/'
             cmd='cp %s %s' %(original_filepath, aim_path)
             job_queue=job_queue()
@@ -71,7 +71,7 @@ class FileSystem():
 #We should set a status about file download
 
 
-    def GetProjects(self):
+    def GetProjects(self,path):
         #if self._path[-1]!='/':
         #    self._path+='/'
         projects = os.listdir(path+'Projects/')
@@ -86,8 +86,8 @@ class FileSystem():
     def project_info(self):
         return self._project_info
 
-    def GetSamples(self):
-        path =self._path '/Samples/'
+    def GetSamples(self,path):
+        path =path+'/Samples/'
         samples = os.listdir(path)
         dic={}
         for s in samples:
