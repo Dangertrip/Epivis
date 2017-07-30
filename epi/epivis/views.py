@@ -13,6 +13,20 @@ def checklogin(request):
             return True
     return False
 
+def refresh_basemount(request):
+    if not checklogin(request):
+        return index(request)
+    #base_path = request.session['basemount_path']
+    #linux_account = request.session['linux_account']
+    #linux_password = request.session['linux_password']
+    username = request.session['username']
+    try:
+        FileSystem.refresh(username)
+    except Exception:
+        return False
+    return True
+    
+
 def index(request):
     #cal1()
     #print(cal1())
