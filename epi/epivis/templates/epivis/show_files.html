@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Show Files</title>
+	<link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+	{% for project in projects %}
+		<button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#sample">{{ project.name }}</button>
+		{% for sample in project.Samples %}
+			<button id="sample" type="button" class="btn btn-primary" data-toggle="collapse" data-target="#file" class="collapse">{{ sample.name }}</button>
+			{% for file in sample.Files %}
+				<div id="file" class="collapse">
+					<a href="">{{ file.name }}</a>
+				</div>
+			{% endfor %}
+		{% endfor %}
+	{% endfor %}
+	
+</body>
+</html>

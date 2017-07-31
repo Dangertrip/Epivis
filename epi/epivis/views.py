@@ -18,23 +18,19 @@ def refresh_basemount(request):
     if not checklogin(request):
         return index(request)
     filesystem = FS()
-    #base_path = request.session['basemount_path']
-    #linux_account = request.session['linux_account']
-    #linux_password = request.session['linux_password']
 #account password path
     username = request.session['username']
     info = User.objects.filter(username = username)[0]
     account = info.username_linux
     password = info.password_linux
     path = info.basemount_point
-    print('Before return')
-    filesystem.refresh(account,password,path)
-    filesystem.GetProjects(path)
+    #print('Before return')
+    #filesystem.refresh(account,password,path)
+    #filesystem.GetProjects(path)
     try:
         filesystem.refresh(account,password,path)
     except Exception:
         return False
-    print(filesystem.GetProjects())
     return redirect('/epivis/menu')
     
 
@@ -102,6 +98,42 @@ def menu(request):
     username=request.session['username']
     return render(request,'epivis/menu.html',{'username':username})
 
-def show_file(request):
-#Get file information from sql and form json for javascript
+def download_files(request):
     pass
+
+def file_detail(request):
+    #Here we should pass the fileid using url
+    fileid=0
+    f = File.objects.get(id=fileid)
+    sample = f.sampleid
+    project = sample.projectid
+    return render(request,'epivis/file_detail.html',{'project':project.name \
+            ,'sample':sample.name,'filename':f.name,'mate':f.mate,'feature':f.feature})
+    #return Project,Sample,filename,mate,feature
+
+
+def show_files_page(request):
+    if not checklogin(request):
+        return index(request)
+    username = request.session['username']
+    return render(request,'epivis/show_files.html',{'username':username})
+
+
+#CHANGE JSON FILE FORMAT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+def get_files_info(request):
+#Get file information from sql and form json for javascript
+    if not checklogin(request):
+        return index(request)
+    username = request.session['username']
+    info = User.objects.filter(username = username)[0]
+    #account = info.username_linux
+    #password = info.password_linux
+    path = info.basemount_point
+    filesystem = FS()
+    filesinfo = filesystem.GetProjects(path)#json
+    #{Projects name:{Samples name:{filename:path}}}
+    #Now it should be changed into:
+    #{"Projects":[{"name":"projectname","Samples":["name":"samplename","Files":[{"name":"filename","path":"filepath"}]]}]}
+    return filesinfo
+
+

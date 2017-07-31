@@ -22,7 +22,7 @@ class Sample(models.Model):
 class File(models.Model):
     name = models.CharField(max_length=200,unique=True)
     mate = models.IntegerField(default=-1)
-    sampleid = models.ForeignKey(Sample, on_delete = models.CASCADE)
+    sampleid = models.ForeignKey(Sample,on_delete = models.CASCADE)
     feature = models.CharField(max_length=200)
     #sample          ForeignKey to sample
 
