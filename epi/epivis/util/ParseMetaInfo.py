@@ -37,15 +37,16 @@ def getmetainfo():
             metadata = f.read()
     except IOError as err:
         print('Missing meta data file "metasetting.xml".')
-    
-    tree = ET.fromstring(metadata)
-    r = tree.getroot()
+    #print(metadata) 
+    root = ET.fromstring(metadata)    
+    #r = tree.getroot()
     node=[]
-    if root[0].tag!='cache_path':
+    if root[0].tag!='cache_path' or root[1].tag!="nodes":
         raise Exception('Wrong tags in metasetting.xml !')
     cache_path=root[0].text
-    for i in range(1,len(root)):
-        child = root[i]
+    nodes = root[1]
+    for i in range(1,len(nodes)):
+        child = nodes[i]
         if child.tag!='node':
             raise Exception('Wrong tags in metasetting.xml !')
         node.append(node)
@@ -73,4 +74,5 @@ def SetMeta(cache_path,nodes):
         f.write(xml.toprettyxml(encoding='utf-8').decode('utf-8'))
 
 if __name__=="__main__":
-    SetMeta('aaa',['1','2'])
+    #SetMeta('aaa',['1','2'])
+    print(getmetainfo())

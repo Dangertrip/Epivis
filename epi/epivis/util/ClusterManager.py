@@ -2,7 +2,6 @@
 import sys, glob, os, time, subprocess, threading, pprint
 import argparse
 from queue import Queue
-from models import Jobs
 
 #====================================Resource_Monitor============================================
 def Single_Job_Process(job,node):
@@ -43,7 +42,7 @@ class Job_Queue(Queue):
             '''
 
             @classmethod
-            def recordjob(job,updateMark=False):
+            def recordjob(job,updateMark=False,Jobs):
                 if updateMark:
                     pass
                 else:

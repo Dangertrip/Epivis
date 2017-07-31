@@ -1,31 +1,26 @@
 import subprocess
 import os
 import paramiko
-from .ClusterManager import job_queue
+#from .ClusterManager import job_queue
+from .ParseMetaInfo import getmetainfo
 #This class mainly use for managing basemount files
 #We still need another level to maintain the metadata. I think we need to use Django to
 #save the metadata.
 class FileSystem():
 
-    def __init__(self,mountpoint,cwd):
+    def __init__(self,cwd):
        # self._path = mountpoint
        # if self._path[-1]!='/':
        #     self._path+='/'
         self._cwd = cwd
         if self._cwd[-1]!='/':
             self._cwd+='/'
-'''
-    def Mount(self):
-        out = subprocess.call("basemount "+self._path,shell=True)
 
-    def Unmount(self):
-        out = subprocess.call("basemount --unmount "+self._path,shell=True)
-'''
-    def reload(account,password,path):
-        ssh = paramiko.SSHClient()
+    def refresh(self,account,password,path):
+        s = paramiko.SSHClient()
         s.load_system_host_keys()
         s.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        s.connect(hostname="127.0.0.1",port=22,username=account,password=password)
+        s.connect(hostname="66.64.78.194",port=22,username=account,password=password)
         s.exec_command("basemount "+path)
         s.exec_command("basemount --unmount "+path)
         s.close()
@@ -61,8 +56,8 @@ class FileSystem():
             original_filepath=path+'Projects/'+project+'/Samples/'+sample+'/Files/'+filename
             aim_path = _cwd+project+'/'+sample+'/'
             cmd='cp %s %s' %(original_filepath, aim_path)
-            job_queue=job_queue()
-            job_queue.newJob(cmd,5)
+    #        job_queue=job_queue()
+    #        job_queue.newJob(cmd,5)
 #Then form a job insert into job queue
             #p = subprocess.Popen('cp %s %s' %(original_filepath, aim_path),shell=True,stderr=subprocess.PIPE)
             #tasks.append(p)
@@ -74,6 +69,8 @@ class FileSystem():
     def GetProjects(self,path):
         #if self._path[-1]!='/':
         #    self._path+='/'
+        if path[-1]!='/':
+            path+='/'
         projects = os.listdir(path+'Projects/')
         dic={}
         for p in projects:
@@ -106,7 +103,7 @@ class FileSystem():
     @path.setter
     def path(self,path):
         self._path = path
-        self.reload()
+        self.refresh()
 
     @property
     def cwd(self):
@@ -115,13 +112,22 @@ class FileSystem():
     @cwd.setter
     def cwd(self,cwd):
         self._cwd = cwd
+
+    def check_available(self):
+        pass
 '''
     def reload(self):
         self.unmount()
         self.mount()
 '''
+_,_,cwd = getmetainfo()
+filesystem = FileSystem(cwd)
+
+def FS():
+    return filesystem
 
 
 if __name__=="__main__":
-    print("Test")
+    filesystem.refresh()
+    filesystem.GetProjects('/data/yyin/data/basespace')
 

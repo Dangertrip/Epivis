@@ -4,6 +4,7 @@ from .Test.module import *
 from .util.ParseMetaInfo import *
 from .util.GetNode import GetNode
 from .models import *
+from .util.Basemount import FS
 
 # Create your views here.
 
@@ -16,15 +17,25 @@ def checklogin(request):
 def refresh_basemount(request):
     if not checklogin(request):
         return index(request)
+    filesystem = FS()
     #base_path = request.session['basemount_path']
     #linux_account = request.session['linux_account']
     #linux_password = request.session['linux_password']
+#account password path
     username = request.session['username']
+    info = User.objects.filter(username = username)[0]
+    account = info.username_linux
+    password = info.password_linux
+    path = info.basemount_point
+    print('Before return')
+    filesystem.refresh(account,password,path)
+    filesystem.GetProjects(path)
     try:
-        FileSystem.refresh(username)
+        filesystem.refresh(account,password,path)
     except Exception:
         return False
-    return True
+    print(filesystem.GetProjects())
+    return redirect('/epivis/menu')
     
 
 def index(request):
@@ -47,23 +58,24 @@ def index(request):
 def login(request):
     username = request.POST['username']
     password = request.POST['password']
-    account=User.object.filter(username = username, password=password)
+    account=User.objects.filter(username = username, password=password)
     if len(account)!=1:
         request.session['login']=3
-        return index(request)
+        return redirect('/epivis')
     else:
         request.session['login']=1
         request.session['username']=username
         try:
-            from ClusterManager import cluster_manager,job_queue
-        except Exception:
+            FS().check_available()
+        except Exception as e:
+            print(e)
             if username!='root':
                 print('error')
-                return redirect(index)
+                return redirect('/epivis')
             else:
                 return render(request,'epivis/set_meta.html',{'nodes':GetNode(),'cache_path':cache_path})#redirect(setting_meta)
 
-        return menu(request)
+        return redirect('/epivis/menu')
 
 def get_meta(request):
     print('Get_meta')
@@ -85,7 +97,6 @@ def get_meta(request):
 
 
 def menu(request):
-    pass
     if not checklogin(request):
         return index(request)
     username=request.session['username']
@@ -93,4 +104,4 @@ def menu(request):
 
 def show_file(request):
 #Get file information from sql and form json for javascript
-
+    pass

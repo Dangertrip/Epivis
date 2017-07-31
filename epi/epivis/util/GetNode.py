@@ -5,7 +5,7 @@ Return all the nodes' name as a string slice from qhost command.
 Ignore all nodes info if 'ARCH' attribute of nodes is '-'
 '''
 def GetNode():
-    out = subprocess.Popen('qhost',shell=True,stdout=subprocess.PIPE)
+    out = subprocess.Popen('ssh -l yyin 66.64.78.194 "qhost"',shell=True,stdout=subprocess.PIPE)
     s=out.stdout.readlines()[3:]
 #    lines = out.readlines()
 #    print(out)
@@ -16,7 +16,7 @@ def GetNode():
         #print(t)
         if t[1]!='-':
             nodes.append(t[0])
-    return(nodes)
+    return nodes
 
 if __name__=="__main__":
     print(GetNode())
