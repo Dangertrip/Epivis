@@ -72,9 +72,14 @@ class FileSystem():
         if path[-1]!='/':
             path+='/'
         projects = os.listdir(path+'Projects/')
+        for i in range(len(projects)-1,-1,-1):
+            if projects[i][0]=='.':
+                del projects[i]
+        #print(projects)
         dic={}
+        path+='Projects/'
         for p in projects:
-            dic[p]=GetSamples(path+p)
+            dic[p]=self.GetSamples(path+p)
         self._project_info=dic
         return dic
         #return projects list
@@ -86,10 +91,16 @@ class FileSystem():
     def GetSamples(self,path):
         path =path+'/Samples/'
         samples = os.listdir(path)
+        for i in range(len(samples)-1,-1,-1):
+            if samples[i][0]=='.':
+                del samples[i]
         dic={}
         for s in samples:
             filepath = path+s+'/Files/'
             files = os.listdir(filepath)
+            for i in range(len(files)-1,-1,-1):
+                if files[i][0]=='.':
+                    del files[i]
             filename_path={}
             for file in files:
                 filename_path[file]=filepath+file
