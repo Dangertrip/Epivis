@@ -7,18 +7,32 @@
 	<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
 	<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
-<body>
-	{% for project in projects %}
-		<button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#sample">{{ project.name }}</button>
+<body>	
+	{% for project in projects.Projects %}
+		<input type="checkbox" name="project" id="{{ project.name }}_project_checkbox" value="{{ project.name }}">
+		<button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#{{ project.name }}_sample">{{ project.name }}</button>
+		<div id="{{ project.name }}_sample" class="collapse">
 		{% for sample in project.Samples %}
-			<button id="sample" type="button" class="btn btn-primary" data-toggle="collapse" data-target="#file" class="collapse">{{ sample.name }}</button>
+			<input type="checkbox" name="sample" id="sample_checkbox" value="{{ sample.name }}">
+			<button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#{{ sample.name }}_file">{{ sample.name }}</button>
+			<div id="{{ sample.name }}_file" class="collapse">
 			{% for file in sample.Files %}
-				<div id="file" class="collapse">
-					<a href="">{{ file.name }}</a>
-				</div>
+				<input type="checkbox" name="file" id="file_checkbox" value={{ file.id }}>
+				<a href="">{{ file.name }}</a>
 			{% endfor %}
+			</div>
 		{% endfor %}
+		</div>
 	{% endfor %}
-	
+<!--I think we could get elements by name=="file" and checked feature. Then form a file.id list and turn it back to view. Then we could check whether the file has been downloaded. -->
+	<script>
+		$(document).ready(function(){
+			$("sample_checkbox").click(function(){
+				if (this.checked) {
+					$("input[name='file']")
+				}
+			});
+		})
+	</script>
 </body>
 </html>

@@ -17,33 +17,38 @@ class FileSystem():
             self._cwd+='/'
 
     def refresh(self,account,password,path):
+        pass
         s = paramiko.SSHClient()
         s.load_system_host_keys()
         s.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        s.connect(hostname="66.64.78.194",port=22,username=account,password=password)
+        s.connect(hostname="127.0.0.1",port=22,username=account,password=password)
         s.exec_command("basemount "+path)
         s.exec_command("basemount --unmount "+path)
         s.close()
 
-    def preset_folder(self,projects):
-
+    def check_cwd(self):
         #check the permission
-        p = subprocess.Popen('mkdir %stest' %self._cwd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        p = subprocess.Popen('mkdir %stest' %self._cwd,shell=True,stdout=subprocess.PIPE,stderr=    subprocess.PIPE)
         err = p.stderr.readlines()
         if 'Permission denied' in err[0].decode('utf-8'):
             return False #Maybe we could change it to exception later.
+        return True
 
-        projectlist=os.listdir(self._cwd)
+    def preset_folder(self,projects):
+        if not check_cwd:
+            raise Exception("Please reset a correct cache path!")
+        projectlist=set(os.listdir(self._cwd))
+
         for project in projects:
             if not project in projectlist:
                 os.system('mkdir %s%s' %(self._cwd,project))
             sample_path = self._cwd+project+'/'
-            samplelist = os.listdir(sample_path)
+            samplelist = set(os.listdir(sample_path))
             for sample in project:
                 if not sample in samplelist:
                     os.system('mkdir %s%s' %(sample_path,sample))
 
-        return True
+        #return True
 
     def download(self,downloadlist,path):
         #check whether file have been download
@@ -55,7 +60,8 @@ class FileSystem():
             filename = None
             original_filepath=path+'Projects/'+project+'/Samples/'+sample+'/Files/'+filename
             aim_path = _cwd+project+'/'+sample+'/'
-            cmd='cp %s %s' %(original_filepath, aim_path)
+            if not os.path.isfile(aim_path+filename):
+                cmd='cp %s %s' %(original_filepath, aim_path)
     #        job_queue=job_queue()
     #        job_queue.newJob(cmd,5)
 #Then form a job insert into job queue
@@ -65,7 +71,7 @@ class FileSystem():
         #download files which havn't been download
 #We should set a status about file download
 
-
+#{"Projects":[{"name":"projectname","Samples":["name":"samplename","Files":[{"name":"filenam    e","path":"filepath"}]]}]}
     def GetProjects(self,path):
         #if self._path[-1]!='/':
         #    self._path+='/'
@@ -77,9 +83,13 @@ class FileSystem():
                 del projects[i]
         #print(projects)
         dic={}
+        dic['Projects']=[]
         path+='Projects/'
         for p in projects:
-            dic[p]=self.GetSamples(path+p)
+            project={}
+            project['name']=p
+            project['Samples']=self.GetSamples(path+p)
+            dic['Projects'].append(project)
         self._project_info=dic
         return dic
         #return projects list
@@ -88,24 +98,31 @@ class FileSystem():
     def project_info(self):
         return self._project_info
 
+#{"Projects":[{"name":"projectname","Samples":["name":"samplename","Files":[{"name":"filenam    e","path":"filepath"}]]}]}
     def GetSamples(self,path):
         path =path+'/Samples/'
         samples = os.listdir(path)
         for i in range(len(samples)-1,-1,-1):
             if samples[i][0]=='.':
                 del samples[i]
-        dic={}
+        ans=[]
         for s in samples:
+            onesample={}
+            onesample['name']=s
+            onesample['Files']=[]
             filepath = path+s+'/Files/'
             files = os.listdir(filepath)
             for i in range(len(files)-1,-1,-1):
                 if files[i][0]=='.':
                     del files[i]
             filename_path={}
-            for file in files:
-                filename_path[file]=filepath+file
-            dic[s]=filename_path
-        return dic
+            for f in files:
+                onefile = {}
+                onefile['name']=f
+                onefile['path']=filepath+f
+                onesample['Files'].append(onefile)
+            ans.append(onesample)
+        return ans
 
     @property
     def path(self):

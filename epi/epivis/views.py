@@ -29,9 +29,11 @@ def refresh_basemount(request):
     #filesystem.GetProjects(path)
     try:
         filesystem.refresh(account,password,path)
+        request.session['refresh_status']=True
     except Exception:
-        return False
-    return redirect('/epivis/menu')
+        request.session['refresh_status']=False
+    finally:
+        return redirect('/epivis/menu')
     
 
 def index(request):
@@ -70,7 +72,7 @@ def login(request):
                 return redirect('/epivis')
             else:
                 return render(request,'epivis/set_meta.html',{'nodes':GetNode(),'cache_path':cache_path})#redirect(setting_meta)
-
+        
         return redirect('/epivis/menu')
 
 def get_meta(request):
@@ -99,7 +101,7 @@ def menu(request):
     return render(request,'epivis/menu.html',{'username':username})
 
 def download_files(request):
-    pass
+    pass 
 
 def file_detail(request):
     #Here we should pass the fileid using url
@@ -116,10 +118,15 @@ def show_files_page(request):
     if not checklogin(request):
         return index(request)
     username = request.session['username']
-    return render(request,'epivis/show_files.html',{'username':username})
+    u = User.objects.get(username=username)
+    projects = FS().GetProjects(u.basemount_point)
+    print(projects)
+    return render(request,'epivis/show_files.html',{'username':username,'projects':projects})
 
 
 #CHANGE JSON FILE FORMAT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#changed
+
 def get_files_info(request):
 #Get file information from sql and form json for javascript
     if not checklogin(request):
