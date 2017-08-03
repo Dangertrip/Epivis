@@ -63,6 +63,7 @@ def login(request):
     else:
         request.session['login']=1
         request.session['username']=username
+        request.session['id']=account[0].id
         try:
             FS().check_available()
         except Exception as e:

@@ -28,25 +28,31 @@ class FileSystem():
 
     def check_cwd(self):
         #check the permission
-        p = subprocess.Popen('mkdir %stest' %self._cwd,shell=True,stdout=subprocess.PIPE,stderr=    subprocess.PIPE)
-        err = p.stderr.readlines()
-        if 'Permission denied' in err[0].decode('utf-8'):
-            return False #Maybe we could change it to exception later.
+        #p = subprocess.Popen('mkdir %stest' %self._cwd,shell=True,stdout=subprocess.PIPE,stderr=    subprocess.PIPE)
+        #err = p.stderr.readlines()
+        #if 'Permission denied' in err[0].decode('utf-8'):
+        #    return False #Maybe we could change it to exception later.
+        #return True
+        if oct(os.stat(self._cwd).st_mode)[-3:][0]!='7':
+            return False
         return True
 
+#{"Projects":[{"name":"projectname","Samples":["name":"samplename","Files":[{"name":"filenam    e","path":"filepath"}]]}]}
     def preset_folder(self,projects):
-        if not check_cwd:
+        if not self.check_cwd():#Now I think the checking operation should be done before system start.
             raise Exception("Please reset a correct cache path!")
         projectlist=set(os.listdir(self._cwd))
 
-        for project in projects:
-            if not project in projectlist:
-                os.system('mkdir %s%s' %(self._cwd,project))
-            sample_path = self._cwd+project+'/'
+        for project in projects["Projects"]:
+            pname = project["name"]
+            if not pname in projectlist:
+                os.system('mkdir %s%s' %(self._cwd,pname))
+            sample_path = self._cwd+pname+'/'
             samplelist = set(os.listdir(sample_path))
-            for sample in project:
-                if not sample in samplelist:
-                    os.system('mkdir %s%s' %(sample_path,sample))
+            for sample in project["Samples"]:
+                sname = sample["name"]
+                if not sname in samplelist:
+                    os.system('mkdir %s%s' %(sample_path,sname))
 
         #return True
 
@@ -156,6 +162,7 @@ def FS():
 
 
 if __name__=="__main__":
-    filesystem.refresh()
-    filesystem.GetProjects('/data/yyin/data/basespace')
+    #filesystem.refresh()
+    p=filesystem.GetProjects('/Users/yyin/github/basespace')
+    filesystem.preset_folder(p)
 

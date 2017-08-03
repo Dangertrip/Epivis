@@ -24,6 +24,11 @@ class File(models.Model):
     mate = models.IntegerField(default=-1)
     sampleid = models.ForeignKey(Sample,on_delete = models.CASCADE)
     feature = models.CharField(max_length=200)
+    owner = models.CharField(max_length=200)
+    viewer = models.CharField(max_length=200)
+    path = models.CharField(max_length=200)
+    createby = models.CharField(max_length=200)
+    ancester = models.CharField(max_length=200,null=True)
     #sample          ForeignKey to sample
 
 class Jobs(models.Model):
@@ -31,8 +36,17 @@ class Jobs(models.Model):
     priority = models.IntegerField()
     status = models.IntegerField()
     fullcmd = models.CharField(max_length=500)
+    input = models.CharField(max_length=200,null=True)
+    output = models.CharField(max_length=200,null=True)
     out = models.TextField()
     err = models.TextField()
 
+class software(models.Model):
+    name = models.CharField(max_length=50)
+    comment = models.TextField()
+    document_json = models.CharField(max_length=200)
+    input = models.IntegerField()
+    output = models.IntegerField()
+    
 
 # Create your models here.
